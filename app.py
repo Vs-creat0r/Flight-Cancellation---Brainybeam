@@ -113,7 +113,7 @@ with tab1:
     st.subheader("Will the flight arrive more than 15 minutes late?")
     airline, origin, dest, year, month = common_inputs("1")
     dep = st.number_input("Departure delay so far (minutes, can be negative if early)",
-                          -60, 600, 0, key="dep1")
+                          -60, 600, 10, key="dep1")
     if st.button("Predict", type="primary", key="b1"):
         row = pd.DataFrame([{'airline':airline,'origin':origin,'dest':dest,
                              'dep_delay':dep,'fl_year':year,'fl_month':month}])
@@ -128,7 +128,8 @@ with tab1:
 with tab2:
     st.subheader("How bad will the delay be?")
     airline, origin, dest, year, month = common_inputs("2")
-    dep = st.number_input("Departure delay so far (minutes)", -60, 600, 0, key="dep2")
+    dep = st.number_input("Departure delay so far (minutes)", -60, 600, 10, key="dep2")
+    st.caption("Tip: 0–15 = on time, 15–60 = minor, 60+ = major. Change the number and press Predict.")
     if st.button("Predict", type="primary", key="b2"):
         row = pd.DataFrame([{'airline':airline,'origin':origin,'dest':dest,
                              'dep_delay':dep,'fl_year':year,'fl_month':month}])
@@ -137,12 +138,19 @@ with tab2:
                  'minor':'🟡 Minor delay (15–60 min)',
                  'major':'🔴 Major delay (over 60 min)'}[pred]
         st.subheader(label)
+        proba = dict(zip(m2.classes_, m2.predict_proba(row)[0]))
+        st.write("Chances for each:")
+        st.bar_chart(pd.Series({
+            'On time': proba.get('on_time', 0),
+            'Minor':   proba.get('minor', 0),
+            'Major':   proba.get('major', 0),
+        }))
 
 # ---- TAB 3: big departure delay ----
 with tab3:
     st.subheader("Will the flight leave more than 15 minutes late?")
     airline, origin, dest, year, month = common_inputs("3")
-    arr = st.number_input("Expected arrival delay (minutes)", -60, 600, 0, key="arr3")
+    arr = st.number_input("Expected arrival delay (minutes)", -60, 600, 10, key="arr3")
     if st.button("Predict", type="primary", key="b3"):
         row = pd.DataFrame([{'airline':airline,'origin':origin,'dest':dest,
                              'arr_delay':arr,'fl_year':year,'fl_month':month}])
